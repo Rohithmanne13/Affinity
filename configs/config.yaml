@@ -1,0 +1,98 @@
+# =============================================================================
+# Personalized Content Ranking — Master Configuration
+# =============================================================================
+
+project:
+  name: "personalized-content-ranking"
+  version: "1.0.0"
+  seed: 42
+
+# ----- Paths -----
+paths:
+  data_dir: "data"
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  features_dir: "data/features"
+  artifacts_dir: "artifacts"
+  figures_dir: "docs/figures"
+
+# ----- Dataset -----
+dataset:
+  name: "MIND-small"
+  variant: "small"  # "small" or "large"
+  train_split: "train"
+  dev_split: "dev"
+
+# ----- Preprocessing -----
+preprocessing:
+  min_user_interactions: 2
+  min_item_impressions: 1
+  max_history_length: 50
+  remove_duplicates: true
+  log_statistics: true
+
+# ----- Feature Engineering -----
+features:
+  user:
+    recency_windows: [1, 3, 7]  # days
+    max_categories: 20
+  item:
+    freshness_decay_hours: 72
+    min_impressions: 5
+  context:
+    time_buckets: 24
+
+# ----- Train/Val/Test Split -----
+splitting:
+  strategy: "time_aware"  # "time_aware" or "random"
+  train_ratio: 0.7
+  val_ratio: 0.15
+  test_ratio: 0.15
+
+# ----- User Segmentation -----
+segmentation:
+  min_clusters: 3
+  max_clusters: 10
+  optimal_method: "silhouette"
+  default_clusters: 5
+
+# ----- Candidate Generation -----
+candidates:
+  pool_size: 200
+  popularity:
+    top_n: 100
+    recency_hours: 72
+  content_similarity:
+    top_n: 50
+    method: "tfidf_cosine"
+  collaborative:
+    top_n: 50
+    min_common_interactions: 3
+    max_similar_users: 20
+
+# ----- Reranking -----
+reranking:
+  diversity:
+    enabled: true
+    method: "mmr"  # maximal marginal relevance
+    lambda_param: 0.6  # balance relevance vs diversity
+    top_n_before_rerank: 50
+  freshness:
+    enabled: true
+    decay_type: "exponential"
+    half_life_hours: 24
+    boost_weight: 0.1
+
+# ----- Evaluation -----
+evaluation:
+  k_values: [5, 10]
+  primary_metric: "ndcg"
+  primary_k: 10
+
+# ----- API -----
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  default_top_k: 10
+  max_top_k: 100

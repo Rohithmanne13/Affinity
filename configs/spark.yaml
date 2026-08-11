@@ -1,0 +1,40 @@
+# =============================================================================
+# Apache Spark Configuration
+# =============================================================================
+# Optimized for local development on a standard laptop (8GB+ RAM).
+# The same pipeline scales to cluster mode by changing spark.master.
+
+spark:
+  app_name: "ContentRankingETL"
+  master: "local[*]"
+
+  config:
+    # Memory
+    spark.driver.memory: "4g"
+    spark.executor.memory: "2g"
+
+    # Parallelism
+    spark.sql.shuffle.partitions: "8"
+    spark.default.parallelism: "4"
+
+    # Serialization
+    spark.serializer: "org.apache.spark.serializer.KryoSerializer"
+
+    # SQL
+    spark.sql.adaptive.enabled: "true"
+    spark.sql.adaptive.coalescePartitions.enabled: "true"
+
+    # UI (disable for scripted runs)
+    spark.ui.enabled: "false"
+
+    # Logging
+    spark.driver.extraJavaOptions: "-Dlog4j.logger.org.apache.spark=WARN"
+
+  # For scaling documentation
+  cluster_notes: |
+    To run on a cluster:
+      1. Change spark.master to "yarn" or "spark://<master>:7077"
+      2. Increase spark.executor.memory and spark.executor.instances
+      3. Increase spark.sql.shuffle.partitions (e.g., 200)
+      4. Set spark.executor.cores as needed
+      5. Package src/ and submit via spark-submit

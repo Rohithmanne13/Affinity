@@ -1,0 +1,80 @@
+# =============================================================================
+# Model Configuration
+# =============================================================================
+
+# ----- XGBoost Tree Ranker -----
+xgboost:
+  objective: "rank:pairwise"
+  eval_metric: "ndcg@10"
+  tree_method: "hist"
+  max_depth: 6
+  learning_rate: 0.1
+  n_estimators: 300
+  subsample: 0.8
+  colsample_bytree: 0.8
+  min_child_weight: 5
+  reg_alpha: 0.1
+  reg_lambda: 1.0
+  early_stopping_rounds: 30
+  verbose_eval: 50
+
+  # Hyperparameter search (small grid for feasibility)
+  search:
+    enabled: true
+    method: "grid"  # "grid" or "random"
+    n_iter: 10  # for random search
+    param_grid:
+      max_depth: [4, 6, 8]
+      learning_rate: [0.05, 0.1]
+      n_estimators: [200, 300]
+      subsample: [0.8]
+      colsample_bytree: [0.8]
+
+# ----- PyTorch Neural Ranker -----
+neural:
+  architecture:
+    embedding_dim: 32
+    hidden_dims: [256, 128, 64]
+    dropout: 0.3
+    activation: "relu"
+    batch_norm: true
+
+  training:
+    epochs: 50
+    batch_size: 512
+    learning_rate: 0.001
+    weight_decay: 0.0001
+    optimizer: "adam"
+    scheduler: "cosine"
+    warmup_epochs: 3
+
+  early_stopping:
+    patience: 7
+    min_delta: 0.0001
+    monitor: "val_ndcg"
+
+  checkpoint:
+    save_best: true
+    save_last: true
+
+  device: "cpu"  # "cpu" or "cuda"
+  num_workers: 0
+
+# ----- Popularity Baseline -----
+baseline:
+  method: "popularity"
+  recency_weight: 0.3
+  time_decay: true
+
+# ----- MLflow -----
+mlflow:
+  tracking_uri: "./mlruns"
+  experiments:
+    baseline: "content-ranking-baseline"
+    xgboost: "content-ranking-xgboost"
+    neural: "content-ranking-neural"
+  registry:
+    model_name: "content-ranker"
+    stage: "Production"
+  log_artifacts: true
+  log_models: true
